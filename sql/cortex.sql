@@ -1,17 +1,31 @@
 -- COMPLETE FUNCTION
-SELECT SNOWFLAKE.CORTEX.COMPLETE('snowflake-arctic','Tell me about Snowflake') AS Response
+SELECT 
+    SNOWFLAKE.CORTEX.COMPLETE(
+        'snowflake-arctic',
+        'Tell me about Snowflake'
+    ) AS Response;
 
 -- TRANSLATE FUNCTION
-SELECT SNOWFLAKE.CORTEX.TRANSLATE('Comment allez-vous?','fr_FR','en_XX') AS Translated
+SELECT 
+    SNOWFLAKE.CORTEX.TRANSLATE(
+        'Comment allez-vous?',
+        'fr_FR','en_XX'
+    ) AS Translated;
 
 -- SENTIMENT FUNCTION
-SELECT TRANSCRIPT, ROUND(SNOWFLAKE.CORTEX.SENTIMENT(TRANSCRIPT))::INT AS Sentiment
+SELECT 
+    TRANSCRIPT,
+    ROUND(
+        SNOWFLAKE.CORTEX.SENTIMENT(TRANSCRIPT)
+    )::INT AS Sentiment
 FROM CALL_TRANSCRIPTS 
 WHERE LANGUAGE = 'English'
 LIMIT 10;
 
 -- SUMMARIZE
-SELECT TRANSCRIPT,SNOWFLAKE.CORTEX.SUMMARIZE(TRANSCRIPT) AS Summary
+SELECT 
+    TRANSCRIPT,
+    SNOWFLAKE.CORTEX.SUMMARIZE(TRANSCRIPT) AS Summary
 FROM CALL_TRANSCRIPTS 
 WHERE LANGUAGE = 'English' LIMIT 1;
 
@@ -22,6 +36,16 @@ Summarize this transcript in less than 200 words.
 Put the product name, defect and summary in JSON format. 
 ###';
 
-SELECT transcript,SNOWFLAKE.CORTEX.COMPLETE('snowflake-arctic',CONCAT('[INST]',$PROMPT,transcript,'[/INST]')) AS Summary
-FROM CALL_TRANSCRIPTS WHERE LANGUAGE = 'English'
+SELECT 
+    TRANSCRIPT,
+    SNOWFLAKE.CORTEX.COMPLETE(
+    'snowflake-arctic',
+    CONCAT(
+      '[INST]',
+      $PROMPT,
+      TRANSCRIPT,
+     '[/INST]')
+     ) AS Summary
+FROM CALL_TRANSCRIPTS 
+WHERE LANGUAGE = 'English'
 LIMIT 1;
