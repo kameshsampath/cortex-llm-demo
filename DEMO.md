@@ -1,6 +1,6 @@
 # Demo Script
 
-Setup LLM demo <https://medium.com/snowflake/run-3-useful-llm-inference-jobs-in-minutes-with-snowflake-cortex-743a6096fff8>
+Modified version of [LLM demo](https://medium.com/snowflake/run-3-useful-llm-inference-jobs-in-minutes-with-snowflake-cortex-743a6096fff8) with updates to LLM Functions, Streamlit.
 
 ## Env Setup
 
@@ -53,13 +53,13 @@ Supported Models
 ### COMPLETE
 
 ```shell
-snow sql -q "SELECT SNOWFLAKE.CORTEX.COMPLETE('snowflake-arctic','Tell me about Snowflake') AS Response"
+snow cortex complete  'Tell me about Snowflake'
 ```
 
 ### TRANSLATE
 
 ```shell
-snow sql -q "SELECT SNOWFLAKE.CORTEX.TRANSLATE('Comment allez-vous?','fr_FR','en_XX') AS Translated"
+snow cortex translate --from "fr" --to "en" 'Comment allez-vous?'
 ```
 
 ### SENTIMENT
@@ -95,4 +95,26 @@ SELECT transcript,SNOWFLAKE.CORTEX.COMPLETE('snowflake-arctic',CONCAT('[INST]','
 FROM CALL_TRANSCRIPTS WHERE LANGUAGE = 'English'
 LIMIT 1;
 EOF
+```
+
+### Extract Answer
+
+Use the [Answers](./samples/answers.txt) to answer [questions](./samples/questions.txt)
+
+```shell
+snow cortex extract-answer --file ./samples/answers.txt 'what does snowpark do ?'
+```
+
+```shell
+snow cortex extract-answer --file ./samples/answers.txt 'What does Snowflake eliminate?'
+```
+
+```shell
+snow cortex extract-answer --file ./samples/answers.txt 'What non-SQL code Snowpark process?'
+```
+
+### Streamlit App
+
+```shell
+streamlit run app.py
 ```
