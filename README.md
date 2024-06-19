@@ -37,7 +37,7 @@ snow sql -q 'SELECT * FROM CALL_TRANSCRIPTS LIMIT 10'
 Supported Models
 
 - Large
-  - reka-core
+  - reka-core (not available on AWS `us-west`)
   - llama3-70b
   - mistral-large
 - Medium
@@ -118,3 +118,8 @@ snow cortex extract-answer --file ./samples/answers.txt 'What non-SQL code Snowp
 ```shell
 streamlit run app.py
 ```
+
+## Useful Links
+
+- [Snow CLI](https://github.com/snowflakedb/snowflake-cli)
+- [Snowflake Trial](https://signup.snowflake.com/)
