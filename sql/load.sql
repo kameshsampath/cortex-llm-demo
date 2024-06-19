@@ -1,9 +1,16 @@
-USE ROLE  &{ctx.env.SNOWFLAKE_ROLE};
-USE DATABASE  &{ctx.env.SNOWFLAKE_DATABASE};
+--!jinja
+SET ROLE=KAMESH_DEMO_ROLE;
+SET DB=KAMESH_LLM_DEMO;
+
+USE ROLE  {{.ROLE}};
+USE DATABASE {{.DB}};
+
 -- Schema to hold all file formats
 CREATE SCHEMA IF NOT EXISTS FILE_FORMATS;
--- Database that will hold all stages
+-- Schmea that will hold all stages
 CREATE SCHEMA IF NOT EXISTS EXTERNAL_STAGES;
+-- Schema to hold all internal stages
+CREATE SCHEMA IF NOT EXISTS INTERNAL_STAGES;
 -- file format to load data from CSV
 -- Default schema
 USE SCHEMA PUBLIC;
@@ -16,6 +23,9 @@ CREATE FILE FORMAT IF NOT EXISTS FILE_FORMATS.CSVFORMAT
 CREATE STAGE IF NOT EXISTS  EXTERNAL_STAGES.CALL_TRANSCRIPTS_DATA_STAGE
   FILE_FORMAT = FILE_FORMATS.CSVFORMAT
   URL = 's3://sfquickstarts/misc/call_transcripts/';
+
+-- local stage to hold all sample files
+CREATE STAGE IF NOT EXISTS INTERNAL_STAGES.SAMPLES
 
 -- table that will be used in LLM queries
 CREATE TABLE IF NOT EXISTS CALL_TRANSCRIPTS ( 
@@ -31,3 +41,5 @@ CREATE TABLE IF NOT EXISTS CALL_TRANSCRIPTS (
 -- Load the data on the transcripts table
 COPY INTO CALL_TRANSCRIPTS
   FROM @EXTERNAL_STAGES.CALL_TRANSCRIPTS_DATA_STAGE;
+
+-- Add sample files to internal stage
