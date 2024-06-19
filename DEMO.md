@@ -90,7 +90,7 @@ EOF
 
 ```shell
 export LLM_PROMPT="Summarize this transcript in less than 200 words.Put the product name, defect and summary in JSON format."
-snow sql --stdin <<EOF
+cat <<EOF | snow sql --format json -i
 SELECT transcript,SNOWFLAKE.CORTEX.COMPLETE('snowflake-arctic',CONCAT('[INST]','${LLM_PROMPT}',transcript,'[/INST]')) AS Summary
 FROM CALL_TRANSCRIPTS WHERE LANGUAGE = 'English'
 LIMIT 1;

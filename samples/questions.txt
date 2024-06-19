@@ -1,0 +1,3 @@
+what does snowpark do ?
+What does Snowflake eliminate?
+What non-SQL code Snowpark process?
