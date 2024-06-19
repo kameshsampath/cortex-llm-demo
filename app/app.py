@@ -2,7 +2,7 @@ import json
 import os
 import pandas as pd
 import streamlit as st
-from snowflake.snowpark.context import get_active_session
+from snowflake.snowpark import Session
 from snowflake.snowpark.functions import col
 from snowflake.cortex import Complete, Translate, ExtractAnswer, Sentiment, Summarize
 
@@ -29,11 +29,19 @@ small_llms = ["llama3-8b", "mistral-7b", "gemma-7b"]
 
 
 @st.cache_resource
-def current_session():
-    return get_active_session()
+def get_active_session():
+    return Session.builder.configs(
+        {
+            "account": "sfdevrel",
+            "user": os.getenv("SNOWFLAKE_USER"),
+            "password": os.getenv("SNOWFLAKE_PASSWORD"),
+            "role": os.getenv("SNOWFLAKE_ROLE"),
+            "database": os.getenv("SNOWFLAKE_DATABASE"),
+        }
+    ).getOrCreate()
 
 
-session = current_session()
+session = get_active_session()
 
 
 @st.cache_data

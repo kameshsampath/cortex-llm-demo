@@ -17,19 +17,61 @@ snow connection test
 ## Prepare DB
 
 ```shell
-snow sql -f sql/setup.sql --role='ACCOUNTADMIN'
+snow stage copy sql/setup.sql @~/scripts/cortex-llm-demo/ --role='ACCOUNTADMIN'
+```
+
+Execute the setup,
+
+Login into Snowsight and run the following command(s) on a SQL Worksheet,
+
+> [!NOTE]
+> Replace $GITHUB_USER and $GITHUB_PASSWORD with your credentials
+
+```sql
+set c_user = CURRENT_USER;
+EXECUTE IMMEDIATE FROM @~/scripts/cortex-llm-demo/setup.sql
+    USING(USER => $c_user, DB => 'KAMESH_LLM_DEMO', ROLE => 'KAMESH_DEMOS_ROLE',GITHUB_USER => '$GITHUB_USER', GITHUB_TOKEN => '$GITHUB_PASSWORD');
+```
+
+> [!WARNING]
+> Does not work now due to bug in SNOW CLI
+>
+> ```shell
+> snow stage execute "@~/scripts/cortex-llm-demo/setup.sql" \
+>   --variable="DB=KAMESH_LLM_DEMO" \
+>   --variable="ROLE=KAMESH_DEMOS_ROLE" \
+>   --variable="GITHUB_USER=$GITHUB_USER" \
+>   --variable="GITHUB_TOKEN=$GITHUB_TOKEN" \
+>   --role='ACCOUNTADMIN'
+> ```
+
+Verify the few objects created as part of setup ,
+
+```sql
+SHOW API INTEGRATIONS;
+SHOW SECRETS;
+SHOW GIT REPOSITORIES;
 ```
 
 ## Load Data
 
-```shell
-snow sql -f sql/load.sql
+```sql
+-- Refresh the repository to fetch latest details
+ALTER GIT REPOSITORY REPOSITORIES.cortex_llm_demo FETCH;
+
+-- List files in the repo
+ls @REPOSITORIES.cortex_llm_demo/branches/snowsight/sql;
+
+-- Execute the load.sql to load data
+-- UPDATE DB/ROLE as needed
+EXECUTE IMMEDIATE FROM @REPOSITORIES.cortex_llm_demo/branches/snowsight/sql/load.sql
+    USING(DB => 'KAMESH_LLM_DEMO' ,ROLE => 'KAMESH_DEMOS_ROLE');
 ```
 
 Verify loaded data,
 
 ```shell
-snow sql -q 'SELECT * FROM CALL_TRANSCRIPTS LIMIT 10'
+SELECT * FROM CALL_TRANSCRIPTS LIMIT 10;
 ```
 
 ## LLM Functions
@@ -50,76 +92,29 @@ Supported Models
   - mistral-7b
   - gemma-7b
 
-### COMPLETE
+Navigate to Git Repository on Snowsight and on branch `snowsight` run `fetch` to
+update the repository.
 
-```shell
-snow cortex complete  'Tell me about Snowflake'
+You can also open a new SQL worksheet and run the following command to sync your
+Git repo. Refer to [docs](https://docs.snowflake.com/en/developer-guide/git/git-operations#refresh-a-repository-stage-from-the-repository) for more details.
+
+```SQL
+ALTER GIT REPOSITORY REPOSITORIES.CORTEX_LLM_DEMO FETCH
 ```
 
-### TRANSLATE
+Then navigate to `sql` folder and on click `...` on the row with `cortex.sql` and
+do `Copy into Worksheet`. Refer to [docs](https://docs.snowflake.com/en/developer-guide/git/git-operations#copy-repository-based-code-into-a-worksheet) for more details.
 
-```shell
-snow cortex translate --from "fr" --to "en" 'Comment allez-vous?'
-```
+You should see a new worksheet with SQL form `cortex.sql` loaded on to a new worksheet.
 
-### SENTIMENT
-
-`-1` Negative , `0` Neutral, `1` Positive
-
-```shell
-snow sql --stdin <<EOF
-SELECT TRANSCRIPT, ROUND(SNOWFLAKE.CORTEX.SENTIMENT(TRANSCRIPT))::INT AS Sentiment
-FROM CALL_TRANSCRIPTS
-WHERE LANGUAGE = 'English'
-LIMIT 10;
-EOF
-```
-
-### SUMMARIZE
-
-```shell
-snow sql --stdin <<EOF
-SELECT TRANSCRIPT,SNOWFLAKE.CORTEX.SUMMARIZE(TRANSCRIPT) AS Summary
-FROM CALL_TRANSCRIPTS
-WHERE LANGUAGE = 'English'
-LIMIT 1;
-EOF
-```
-
-### PROMPTING
-
-```shell
-export LLM_PROMPT="Summarize this transcript in less than 200 words.Put the product name, defect and summary in JSON format."
-cat <<EOF | snow sql --format json -i
-SELECT transcript,SNOWFLAKE.CORTEX.COMPLETE('snowflake-arctic',CONCAT('[INST]','${LLM_PROMPT}',transcript,'[/INST]')) AS Summary
-FROM CALL_TRANSCRIPTS WHERE LANGUAGE = 'English'
-LIMIT 1;
-EOF
-```
-
-### Extract Answer
-
-Use the [Answers](./samples/answers.txt) to answer [questions](./samples/questions.txt)
-
-```shell
-snow cortex extract-answer --file ./samples/answers.txt 'what does snowpark do ?'
-```
-
-```shell
-snow cortex extract-answer --file ./samples/answers.txt 'What does Snowflake eliminate?'
-```
-
-```shell
-snow cortex extract-answer --file ./samples/answers.txt 'What non-SQL code Snowpark process?'
-```
+Try the LLM functions SQL statements to see the Cortex LLM in action.
 
 ### Streamlit App
 
 ```shell
-streamlit run app.py
+streamlit run app/app.py
 ```
 
 ## Useful Links
 
-- [Snow CLI](https://github.com/snowflakedb/snowflake-cli)
 - [Snowflake Trial](https://signup.snowflake.com/)
