@@ -3,10 +3,29 @@ import os
 import pandas as pd
 import streamlit as st
 from snowflake.snowpark import Session
+from snowflake.snowpark.functions import col
 from snowflake.cortex import Complete, Translate, ExtractAnswer, Sentiment, Summarize
 
+
 st.set_page_config(layout="wide")
-st.title("Snowflake Cortex LLM Functions Demo")
+
+supported_languages = {
+    "German": "de",
+    "French": "fr",
+    "Korean": "ko",
+    "Portuguese": "pt",
+    "English": "en",
+    "Italian": "it",
+    "Russian": "ru",
+    "Swedish": "sv",
+    "Spanish": "es",
+    "Japanese": "ja",
+    "Polish": "pl",
+}
+
+large_llms = ["llama3-70b", "mistral-large"]
+medium_llms = ["snowflake-arctic", "reka-flash", "mixtral-8x7b", "llama2-70b-chat"]
+small_llms = ["llama3-8b", "mistral-7b", "gemma-7b"]
 
 
 @st.cache_resource
@@ -24,24 +43,18 @@ def get_active_session():
 
 session = get_active_session()
 
-supported_languages = {
-    "German": "de",
-    "French": "fr",
-    "Korean": "ko",
-    "Portuguese": "pt",
-    "English": "en",
-    "Italian": "it",
-    "Russian": "ru",
-    "Swedish": "sv",
-    "Spanish": "es",
-    "Japanese": "ja",
-    "Polish": "pl",
-}
 
-large_llms = ["reka-core", "llama3-70b", "mistral-large"]
-medium_llms = ["snowflake-arctic", "reka-flash", "mixtral-8x7b", "llama2-70b-chat"]
-small_llms = ["llama3-8b", "mistral-7b", "gemma-7b"]
+@st.cache_data
+def english_transcripts():
+    return (
+        session.table("CALL_TRANSCRIPTS")
+        .select("TRANSCRIPT")
+        .filter(col("language") == "English")
+        .to_pandas()
+    )
 
+
+st.title("Snowflake Cortex LLM Functions Demo")
 st.sidebar.selectbox(
     "Choose Model",
     medium_llms + small_llms + large_llms,
@@ -154,18 +167,33 @@ def extract_answer():
 
 def json_summary():
     st.subheader("JSON Summary")
-    uploaded_file = st.file_uploader(
-        "Choose a :red[**text**] file to summarize:",
-        label_visibility="hidden",
+    df = english_transcripts()
+    event = st.dataframe(
+        df,
+        key="transcript",
+        hide_index=True,
+        on_select="rerun",
+        use_container_width=True,
+        selection_mode=["single-row"],
     )
-    if uploaded_file is not None:
-        # To read file as bytes:
-        str_bytes = uploaded_file.getvalue()
-        if str_bytes:
-            str = uploaded_file.getvalue().decode("utf-8")
-            if str:
-                out = Summarize(str, session)
-                st.write(out)
+    if event.selection and len(event.selection.rows) > 0:
+        sel_transcript = df.iloc[event.selection.rows[0]]["TRANSCRIPT"]
+        if sel_transcript:
+            sel_transcript = sel_transcript.replace("'", "\\'")
+            prompt = f"""
+        [INST]
+        Summarize this transcript in less than 200 words. Put the product name, defect if any, and summary in JSON format for
+        call transcript:
+        {sel_transcript}
+        [/INST]
+        """
+            with st.spinner("Loading ..."):
+                out = Complete(st.session_state.llm_model, prompt, session)
+                try:
+                    json.loads(out)
+                    st.json(out)
+                except ValueError:
+                    st.write(out)
 
 
 st.sidebar.selectbox(
