@@ -1,8 +1,44 @@
 # Demo Script
 
-Modified version of [LLM demo](https://medium.com/snowflake/run-3-useful-llm-inference-jobs-in-minutes-with-snowflake-cortex-743a6096fff8) with updates to LLM Functions, Streamlit.
+Modified version of [Snowflake Arctic Quickstart](https://quickstarts.snowflake.com/guide/getting_started_with_snowflake_arctic/index.html#0) with updates to LLM Functions, Streamlit.
 
 ## Env Setup
+
+Clone the repo,
+
+```shell
+git clone  https://github.com/kameshsampath/cortex-llm-demo.git
+cd cortex-llm-demo
+export PROJECT_HOME="$PWD"
+```
+
+Create a `$PROJECT_HOME/.devcontainer/.env` file with the following variables,
+
+```shell
+export SNOWFLAKE_CONNECTION_NAME=<your snowflake connection name>
+export SNOWFLAKE_USER=<your snowflake user>
+export SNOWFLAKE_WAREHOUSE=<your snowflake warehouse>
+export SNOWFLAKE_PASSWORD=<your snowflake password>
+export SNOWFLAKE_ROLE=<your snowflake role to use>
+export SNOWFLAKE_DATABASE=<your snowflake role to database>
+```
+
+Open the project using VSCode devcontainer.
+
+(OR)
+
+> [!TIP]
+> Use [direnv](https://direnv.net)
+> Create `.envrc` file under $PROJECT_HOME with following content,
+>
+> ```shell
+> layout python
+> dotenv_if_exists .devcontainer/.env
+> ```
+>
+> [asdf-vm](https://asdf-vm.com) to manage Python version
+
+Installing all dependencies locally,
 
 ```shell
 pip install -U requirements.txt
@@ -123,3 +159,4 @@ streamlit run app.py
 
 - [Snow CLI](https://github.com/snowflakedb/snowflake-cli)
 - [Snowflake Trial](https://signup.snowflake.com/)
+- [Blog](https://medium.com/snowflake/run-3-useful-llm-inference-jobs-in-minutes-with-snowflake-cortex-743a6096fff8?)
