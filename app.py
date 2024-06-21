@@ -37,6 +37,7 @@ def get_active_session():
             "password": os.getenv("SNOWFLAKE_PASSWORD"),
             "role": os.getenv("SNOWFLAKE_ROLE"),
             "database": os.getenv("SNOWFLAKE_DATABASE"),
+            "warehouse": os.getenv("SNOWFLAKE_WAREHOUSE"),
         }
     ).getOrCreate()
 
@@ -116,7 +117,8 @@ def sentiment():
             prompt,
             session,
         )
-        score = round(out)
+        # Round to the nearest of -1, 0, or 1 based on the absolute value
+        score = int(round(out))
         st.write(f"Actual sentiment score `{out}` rounded to `{score}`")
         if score == 0:
             st.subheader(":neutral_face:")

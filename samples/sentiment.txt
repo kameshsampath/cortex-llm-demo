@@ -1,1 +1,10 @@
-I feel sorry for poor people dying because of terrorist activities.
+1.	I’m disappointed with the results.
+2.	This situation is unacceptable.
+3.	I’m not satisfied with your performance.
+4.	This is a step in the wrong direction.
+5.	I’m frustrated with the lack of progress.
+6.	This decision is a big mistake.
+7.	I feel let down by the team.
+8.	This is a total disaster.
+9.	I’m upset about how things turned out.
+10.	This was a missed opportunity.
