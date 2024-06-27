@@ -30,16 +30,7 @@ small_llms = ["llama3-8b", "mistral-7b", "gemma-7b"]
 
 @st.cache_resource
 def get_active_session():
-    return Session.builder.configs(
-        {
-            "account": "sfdevrel",
-            "user": os.getenv("SNOWFLAKE_USER"),
-            "password": os.getenv("SNOWFLAKE_PASSWORD"),
-            "role": os.getenv("SNOWFLAKE_ROLE"),
-            "database": os.getenv("SNOWFLAKE_DATABASE"),
-            "warehouse": os.getenv("SNOWFLAKE_WAREHOUSE"),
-        }
-    ).getOrCreate()
+    return Session.builder.config("connection_name", "devrel").getOrCreate()
 
 
 session = get_active_session()
