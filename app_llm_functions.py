@@ -23,7 +23,7 @@ supported_languages = {
     "Polish": "pl",
 }
 
-large_llms = ["llama3-70b", "mistral-large"]
+large_llms = ["llama3.1-405b", "llama3-70b", "mistral-large"]
 medium_llms = ["snowflake-arctic", "reka-flash", "mixtral-8x7b", "llama2-70b-chat"]
 small_llms = ["llama3-8b", "mistral-7b", "gemma-7b"]
 
@@ -34,6 +34,7 @@ def get_active_session():
 
 
 session = get_active_session()
+session.use_schema("DATA")
 
 
 @st.cache_data
